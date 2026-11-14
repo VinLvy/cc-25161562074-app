@@ -5,11 +5,16 @@ const PEMILIK = "<25161562074> - <Davin P F>";   // ganti dengan NIM dan nama se
 const VERSI = "1.0";               // dinaikkan saat rolling update (P8)
 
 // DATABASE_URL = postgresql://user:pass@host:5432/db?sslmode=require
-function db(int $timeout = 5): PDO {
+function db(int $timeout = 5): PDO
+{
     $u = parse_url(getenv("DATABASE_URL"));
     parse_str($u["query"] ?? "", $q);
-    $dsn = sprintf("pgsql:host=%s;port=%d;dbname=%s",
-        $u["host"], $u["port"] ?? 5432, ltrim($u["path"], "/"));
+    $dsn = sprintf(
+        "pgsql:host=%s;port=%d;dbname=%s",
+        $u["host"],
+        $u["port"] ?? 5432,
+        ltrim($u["path"], "/")
+    );
     if (!empty($q["sslmode"])) $dsn .= ";sslmode=" . $q["sslmode"];   // TLS
     $pdo = new PDO($dsn, urldecode($u["user"]), urldecode($u["pass"] ?? ""), [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,   // error jadi exception
@@ -20,7 +25,8 @@ function db(int $timeout = 5): PDO {
     return $pdo;
 }
 
-function json(array $data, int $code = 200): void {
+function json(array $data, int $code = 200): void
+{
     http_response_code($code);
     header("Content-Type: application/json");
     echo json_encode($data);
@@ -40,7 +46,11 @@ if ($path === "/healthz") {            // dangkal: proses hidup
     }
 } elseif ($path === "/tamu" && $method === "POST") {
     $nama = trim($_POST["nama"] ?? "");
-    if ($nama === "") { http_response_code(400); echo "nama wajib diisi"; exit; }
+    if ($nama === "") {
+        http_response_code(400);
+        echo "nama wajib diisi";
+        exit;
+    }
     $st = db()->prepare("INSERT INTO tamu (nama) VALUES (?)");   // ? = parameter
     $st->execute([mb_substr($nama, 0, 80)]);
     header("Location: /", true, 302);
